@@ -1,0 +1,21 @@
+{
+  "train_images": 4274,
+  "valid_images": 110,
+  "test_images": 110,
+  "num_classes": 12,
+  "feature_dimension": 349,
+  "classes": [
+    "Alstonia Scholaris",
+    "Arjun",
+    "Bael",
+    "Basil",
+    "Chinar",
+    "Gauva",
+    "Jamun",
+    "Jatropha",
+    "Lemon",
+    "Mango",
+    "Pomegranate",
+    "Pongamia Pinnata"
+  ]
+}
