@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.a. Sơ đồ khối hệ thống tìm kiếm ảnh lá cây</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fbfbfb;
+      background-image: radial-gradient(#d9dde3 1px, transparent 1px);
+      background-size: 14px 14px;
+      color: #1f2933;
+    }
+    .page { max-width: 820px; margin: 0 auto; padding: 28px 16px 48px; }
+    h1 { margin: 0 0 8px; text-align: center; color: #1f4e3d; font-size: 24px; }
+    .subtitle { margin: 0 auto 28px; text-align: center; line-height: 1.6; color: #4b5f57; font-size: 15px; }
+    .flow { display: flex; flex-direction: column; align-items: center; }
+    .cylinder {
+      position: relative; width: 200px; height: 110px;
+      border-radius: 0 0 50% 50% / 0 0 20% 20%;
+      background: #5d60df; color: #fff; text-align: center;
+      box-shadow: inset 0 -2px 0 rgba(24,31,134,.2);
+    }
+    .cylinder::before {
+      content: ""; position: absolute; left: 0; top: -16px;
+      width: 100%; height: 34px; border-radius: 50%;
+      background: #686be8; border-bottom: 3px solid rgba(50,55,165,.4);
+    }
+    .cylinder span {
+      position: relative; z-index: 1; display: flex; align-items: center;
+      justify-content: center; height: 100%; padding: 0 14px;
+      font-weight: 700; font-size: 14px; line-height: 1.3;
+    }
+    .arrow {
+      width: 2px; height: 28px; background: #242a31; position: relative; flex-shrink: 0;
+    }
+    .arrow::after {
+      content: ""; position: absolute; left: -5px; bottom: -1px;
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 8px solid #242a31;
+    }
+    .step {
+      width: 100%; max-width: 460px; min-height: 48px;
+      border: 3px solid #f3a2c7; border-radius: 8px; padding: 10px 16px;
+      background: #fff7fb; text-align: center; color: #4b4450;
+      font-weight: 700; font-size: 14px; line-height: 1.45;
+    }
+    .feature-zone {
+      width: 100%; background: #ffeca0; border: 3px solid #efc75b;
+      border-radius: 4px; padding: 20px 16px 24px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .zone-label {
+      font-size: 13px; font-weight: 700; color: #7a5f00;
+      letter-spacing: .5px; margin-bottom: 10px; text-transform: uppercase;
+    }
+    .fbox {
+      width: 100%; max-width: 480px; min-height: 44px;
+      border: 2px solid #60676f; border-radius: 8px; background: #fff; color: #444;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; font-weight: 700; font-size: 13.5px;
+      line-height: 1.35; padding: 9px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.07);
+    }
+    .line {
+      width: 2px; height: 20px; background: #505870; position: relative; flex-shrink: 0;
+    }
+    .line.arrow-head::after {
+      content: ""; position: absolute; left: -5px; bottom: -1px;
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 8px solid #505870;
+    }
+    .bus-wrap {
+      position: relative; width: 100%; max-width: 480px;
+      display: flex; flex-direction: column; gap: 10px;
+      padding-left: 28px; border-left: 3px solid #60676f; margin-top: 4px;
+    }
+    .bus-wrap .fbox { position: relative; }
+    .bus-wrap .fbox::before {
+      content: ""; position: absolute; left: -30px; top: 50%;
+      transform: translateY(-50%); width: 26px; height: 2px; background: #60676f;
+    }
+    .bus-wrap .fbox::after {
+      content: ""; position: absolute; left: -6px; top: 50%;
+      transform: translateY(-50%);
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+      border-left: 7px solid #60676f;
+    }
+    .search-zone {
+      width: 100%; background: #eaf6ff; border: 3px solid #8fc4f1;
+      border-radius: 4px; padding: 20px 16px 24px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .sbox {
+      width: 100%; max-width: 480px; min-height: 44px;
+      border: 2px solid #52758f; border-radius: 8px; background: #fff; color: #2a4a5e;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; font-weight: 700; font-size: 13.5px;
+      line-height: 1.35; padding: 9px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.07);
+    }
+    .sline {
+      width: 2px; height: 20px; background: #3a6ea8; position: relative; flex-shrink: 0;
+    }
+    .sline::after {
+      content: ""; position: absolute; left: -5px; bottom: -1px;
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 8px solid #3a6ea8;
+    }
+    .section-title { margin: 32px 0 12px; color: #1f4e3d; font-size: 20px; }
+    .process {
+      margin: 0; padding: 16px 16px 16px 40px; line-height: 1.85; font-size: 15px;
+      background: #fff; border-left: 4px solid #2e7d32; border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(31,78,61,.08);
+    }
+    .process strong { color: #1f4e3d; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>4.a. Sơ đồ khối hệ thống tìm kiếm ảnh lá cây</h1>
+    <p class="subtitle">
+      Hệ thống nhận một ảnh lá cây mới, tiền xử lý ảnh, trích xuất đặc trưng,
+      so khớp với cơ sở dữ liệu và trả về 5 ảnh có nội dung tương đồng nhất.
+    </p>
+
+    <div class="flow" aria-label="Sơ đồ khối hệ thống">
+      <div class="cylinder"><span>Bộ dữ liệu ảnh lá cây</span></div>
+      <div class="arrow"></div>
+      <div class="step">Chuẩn hóa ảnh về cùng kích thước và cùng tỉ lệ khung hình</div>
+      <div class="arrow"></div>
+      <div class="step">Tiền xử lý ảnh: lọc nhiễu, cân bằng màu và tách nền</div>
+      <div class="arrow"></div>
+
+      <div class="feature-zone">
+        <div class="zone-label">Trích xuất đặc trưng</div>
+        <div class="fbox">Trích xuất đặc trưng của ảnh lá cây</div>
+        <div class="line arrow-head"></div>
+        <div class="fbox">Xác định vùng lá chính trong ảnh</div>
+        <div class="line arrow-head"></div>
+        <div class="fbox">Chuyển đổi không gian màu RGB &rarr; HSV</div>
+        <div class="line" style="height:30px"></div>
+        <div class="bus-wrap">
+          <div class="fbox">Trích xuất đặc trưng màu sắc: histogram HSV, màu trung bình</div>
+          <div class="fbox">Trích xuất đặc trưng hình dạng: diện tích, chu vi, độ dài, độ rộng</div>
+          <div class="fbox">Trích xuất đặc trưng tỉ lệ: độ tròn, độ thon dài, tỉ lệ dài/rộng</div>
+          <div class="fbox">Trích xuất đặc trưng texture: LBP, độ tương phản, độ đồng nhất</div>
+          <div class="fbox">Tạo vector đặc trưng tổng hợp cho từng ảnh lá</div>
+        </div>
+        <div class="line arrow-head" style="height:28px"></div>
+        <div class="cylinder"><span>Lưu trữ đặc trưng và siêu dữ liệu ảnh</span></div>
+      </div>
+
+      <div class="arrow"></div>
+
+      <div class="search-zone">
+        <div class="zone-label" style="color:#1a4a6e">Tìm kiếm ảnh tương tự</div>
+        <div class="sbox">Ảnh truy vấn mới từ người dùng</div>
+        <div class="sline"></div>
+        <div class="sbox">Tiền xử lý &amp; trích xuất vector đặc trưng</div>
+        <div class="sline"></div>
+        <div class="sbox">So khớp với CSDL bằng khoảng cách L2 (FAISS IVF, k&nbsp;=&nbsp;5)</div>
+        <div class="sline"></div>
+        <div class="sbox">Sắp xếp giảm dần theo độ tương đồng và hiển thị 5 ảnh giống nhất</div>
+      </div>
+    </div>
+
+    <section aria-label="Quy trình xử lý">
+      <h2 class="section-title">Quy trình xử lý</h2>
+      <ol class="process">
+        <li><strong>Người dùng cung cấp ảnh truy vấn:</strong> hệ thống nhận một ảnh lá cây mới từ người dùng.</li>
+        <li><strong>Tiền xử lý ảnh:</strong> ảnh được đưa về cùng kích thước với ảnh trong bộ dữ liệu, chuẩn hóa màu sắc và giảm nhiễu.</li>
+        <li><strong>Tách vùng lá:</strong> hệ thống xác định vùng chính chứa lá và loại bỏ phần nền không cần thiết.</li>
+        <li><strong>Trích xuất đặc trưng:</strong> hệ thống lấy các thuộc tính như màu sắc, hình dạng, diện tích, chu vi, độ dài, độ rộng, texture và histogram màu.</li>
+        <li><strong>So sánh với cơ sở dữ liệu:</strong> vector đặc trưng của ảnh đầu vào được so sánh với vector đặc trưng của các ảnh đã lưu trong CSDL bằng FAISS IVF.</li>
+        <li><strong>Xếp hạng độ tương đồng:</strong> các ảnh được sắp xếp theo độ giống nhau giảm dần dựa trên khoảng cách L2.</li>
+        <li><strong>Hiển thị kết quả:</strong> hệ thống trả về 5 ảnh lá cây có nội dung giống nhất với ảnh đầu vào.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sơ đồ khối hệ thống tìm kiếm ảnh lá cây</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      background-image: radial-gradient(#ced4da 1px, transparent 1px);
+      background-size: 18px 18px;
+      color: #1f2933;
+      padding: 32px 16px 56px;
+    }
+    h1 {
+      text-align: center; font-size: 22px; color: #1b3a4b;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center; font-size: 14px; color: #4b6070;
+      margin-bottom: 36px; line-height: 1.6;
+    }
+
+    /* ── two-column layout ── */
+    .columns {
+      display: flex; gap: 40px; justify-content: center;
+      align-items: flex-start; max-width: 1000px; margin: 0 auto;
+    }
+    .col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .col-title {
+      font-size: 15px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; padding: 7px 20px; border-radius: 20px;
+      margin-bottom: 18px;
+    }
+    .col-train .col-title { background: #d4edda; color: #155724; border: 2px solid #5cb85c; }
+    .col-query .col-title { background: #cce5ff; color: #004085; border: 2px solid #4a90d9; }
+
+    /* ── generic shapes ── */
+    .box {
+      width: 100%; border-radius: 8px; padding: 10px 14px;
+      text-align: center; font-size: 13.5px; font-weight: 700;
+      line-height: 1.45; border: 2.5px solid;
+    }
+    /* parallelogram – input/output */
+    .para {
+      width: 100%; min-height: 46px;
+      clip-path: polygon(6% 0%, 100% 0%, 94% 100%, 0% 100%);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; font-size: 13.5px; font-weight: 700;
+      line-height: 1.45; padding: 11px 22px;
+    }
+    /* cylinder */
+    .cyl-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .cyl {
+      width: 80%; position: relative;
+      background: #5c6bc0; color: #fff;
+      border-radius: 0 0 50% 50% / 0 0 20% 20%;
+      padding: 22px 14px 14px;
+      text-align: center; font-size: 13.5px; font-weight: 700; line-height: 1.4;
+    }
+    .cyl::before {
+      content: ""; position: absolute; top: -14px; left: 0; width: 100%; height: 30px;
+      border-radius: 50%; background: #7986cb;
+      border-bottom: 3px solid rgba(40,50,150,.35);
+    }
+    .cyl span { position: relative; z-index: 1; }
+
+    /* diamond – decision */
+    .diamond-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .diamond {
+      width: 80%; aspect-ratio: 2.2/1;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; text-align: center;
+      padding: 0 28px; line-height: 1.35;
+    }
+
+    /* arrows */
+    .arr {
+      width: 2px; height: 26px; position: relative; flex-shrink: 0;
+      align-self: center;
+    }
+    .arr::after {
+      content: ""; position: absolute; left: -5px; bottom: -1px;
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 8px solid;
+    }
+    .arr-green { background: #28a745; }
+    .arr-green::after { border-top-color: #28a745; }
+    .arr-blue { background: #1a6fbb; }
+    .arr-blue::after { border-top-color: #1a6fbb; }
+
+    /* feature group zone */
+    .feat-zone {
+      width: 100%; border-radius: 6px; padding: 14px 12px 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .feat-zone-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .feat-bus {
+      position: relative; width: 92%; display: flex; flex-direction: column; gap: 8px;
+      border-left: 3px solid #60676f; padding-left: 22px; margin-top: 4px;
+    }
+    .feat-bus .fbox { position: relative; }
+    .feat-bus .fbox::before {
+      content: ""; position: absolute; left: -24px; top: 50%;
+      transform: translateY(-50%); width: 20px; height: 2px; background: #60676f;
+    }
+    .feat-bus .fbox::after {
+      content: ""; position: absolute; left: -6px; top: 50%;
+      transform: translateY(-50%);
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+      border-left: 7px solid #60676f;
+    }
+    .fbox {
+      width: 100%; min-height: 40px; border: 2px solid #60676f;
+      border-radius: 7px; background: #fff; color: #333;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; font-size: 12.5px; font-weight: 600;
+      line-height: 1.35; padding: 8px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .fbox .dim {
+      display: inline-block; margin-left: 6px; font-size: 11px;
+      font-weight: 700; color: #888; white-space: nowrap;
+    }
+
+    /* colour themes */
+    .green-box  { background: #e8f5e9; border-color: #43a047; color: #1b5e20; }
+    .blue-box   { background: #e3f2fd; border-color: #1e88e5; color: #0d47a1; }
+    .yellow-box { background: #fffde7; border-color: #f9a825; color: #5d4037; }
+    .orange-box { background: #fff3e0; border-color: #fb8c00; color: #4e2900; }
+    .purple-box { background: #f3e5f5; border-color: #8e24aa; color: #4a148c; }
+    .teal-box   { background: #e0f2f1; border-color: #00897b; color: #004d40; }
+    .red-box    { background: #ffebee; border-color: #e53935; color: #7f0000; }
+
+    .feat-zone-train { background: #f1f8e9; border: 2.5px solid #7cb342; }
+    .feat-zone-query { background: #e8eaf6; border: 2.5px solid #5c6bc0; }
+
+    /* label */
+    .label-tag {
+      font-size: 11.5px; color: #555; font-style: italic; margin-top: 4px;
+    }
+
+    /* merge line at bottom */
+    .merge-note {
+      max-width: 860px; margin: 32px auto 0; padding: 14px 20px;
+      background: #fff; border: 2px solid #aaa; border-radius: 8px;
+      font-size: 14px; line-height: 1.7; color: #333;
+    }
+    .merge-note strong { color: #1b3a4b; }
+  </style>
+</head>
+<body>
+  <h1>Sơ đồ khối hệ thống tìm kiếm ảnh lá cây</h1>
+  <p class="subtitle">
+    Hệ thống CBIR gồm hai pipeline:<br>
+    <strong>Training</strong> – xây dựng index từ tập huấn luyện &nbsp;|&nbsp;
+    <strong>Query</strong> – tìm ảnh tương tự cho ảnh truy vấn mới
+  </p>
+
+  <div class="columns">
+
+    <!-- ══════════════ TRAINING PIPELINE ══════════════ -->
+    <div class="col col-train">
+      <div class="col-title">Pipeline xây dựng CSDL</div>
+
+      <!-- Input -->
+      <div class="cyl-wrap">
+        <div class="cyl"><span>Bộ dữ liệu ảnh lá cây<br><small style="font-weight:400">(train / valid / test · 4 274 ảnh · 12 lớp)</small></span></div>
+      </div>
+      <div class="arr arr-green"></div>
+
+      <!-- Resize -->
+      <div class="box green-box">Resize về 256 × 256 px</div>
+      <div class="arr arr-green"></div>
+
+      <!-- Feature extraction zone -->
+      <div class="feat-zone feat-zone-train" style="width:100%">
+        <div class="feat-zone-title" style="color:#33691e">Trích xuất đặc trưng — 349 chiều</div>
+        <div class="fbox green-box" style="width:92%">Tiền xử lý: tách nền, xác định vùng lá</div>
+        <div style="width:2px;height:16px;background:#43a047;margin:0 auto"></div>
+        <div class="feat-bus" style="border-color:#43a047">
+          <div class="fbox yellow-box">HSV<span class="dim">6 chiều</span></div>
+          <div class="fbox orange-box">GLCM<span class="dim">3 chiều</span></div>
+          <div class="fbox purple-box">LBP (P=8, R=1)<span class="dim">10 chiều</span></div>
+          <div class="fbox teal-box">Shape (area, perimeter, eccentricity)<span class="dim">3 chiều</span></div>
+          <div class="fbox red-box">Edge (Canny density, Laplacian var)<span class="dim">2 chiều</span></div>
+          <div class="fbox blue-box">Foreground ratio<span class="dim">1 chiều</span></div>
+          <div class="fbox green-box">HOG (9 orient · 8×8 px/cell · 2×2 blocks)<span class="dim">324 chiều</span></div>
+        </div>
+      </div>
+      <div class="arr arr-green"></div>
+
+      <!-- Z-score -->
+      <div class="box green-box">Chuẩn hóa z-score<br><small style="font-weight:400">Lưu mean &amp; scale → zscore_scaler.json</small></div>
+      <div class="arr arr-green"></div>
+
+      <!-- Build index -->
+      <div class="box green-box">Xây dựng FAISS IVF index<br><small style="font-weight:400">IndexIVFFlat · L2 · nlist = 4</small></div>
+      <div class="arr arr-green"></div>
+
+      <!-- Artifacts -->
+      <div class="cyl-wrap">
+        <div class="cyl" style="background:#388e3c"><span>Lưu artifacts<br><small style="font-weight:400">leaf_features_ivf.faiss<br>faiss_id_mapping.csv · zscore_scaler.json</small></span></div>
+      </div>
+    </div><!-- /col-train -->
+
+
+    <!-- ══════════════ QUERY PIPELINE ══════════════ -->
+    <div class="col col-query">
+      <div class="col-title">Pipeline truy vấn</div>
+
+      <!-- User input -->
+      <div class="para blue-box" style="width:100%">Ảnh truy vấn từ người dùng</div>
+      <div class="arr arr-blue"></div>
+
+      <!-- Resize -->
+      <div class="box blue-box">Resize về 256 × 256 px</div>
+      <div class="arr arr-blue"></div>
+
+      <!-- Feature extraction zone -->
+      <div class="feat-zone feat-zone-query" style="width:100%">
+        <div class="feat-zone-title" style="color:#283593">Trích xuất đặc trưng — 349 chiều</div>
+        <div class="fbox blue-box" style="width:92%">Tiền xử lý: tách nền, xác định vùng lá</div>
+        <div style="width:2px;height:16px;background:#5c6bc0;margin:0 auto"></div>
+        <div class="feat-bus" style="border-color:#5c6bc0">
+          <div class="fbox yellow-box">HSV<span class="dim">6 chiều</span></div>
+          <div class="fbox orange-box">GLCM<span class="dim">3 chiều</span></div>
+          <div class="fbox purple-box">LBP (P=8, R=1)<span class="dim">10 chiều</span></div>
+          <div class="fbox teal-box">Shape (area, perimeter, eccentricity)<span class="dim">3 chiều</span></div>
+          <div class="fbox red-box">Edge (Canny density, Laplacian var)<span class="dim">2 chiều</span></div>
+          <div class="fbox blue-box">Foreground ratio<span class="dim">1 chiều</span></div>
+          <div class="fbox green-box">HOG (9 orient · 8×8 px/cell · 2×2 blocks)<span class="dim">324 chiều</span></div>
+        </div>
+      </div>
+      <div class="arr arr-blue"></div>
+
+      <!-- Z-score normalize -->
+      <div class="box blue-box">Chuẩn hóa z-score<br><small style="font-weight:400">Dùng mean &amp; scale từ zscore_scaler.json</small></div>
+      <div class="arr arr-blue"></div>
+
+      <!-- FAISS search -->
+      <div class="box blue-box">Tìm kiếm FAISS IVF<br><small style="font-weight:400">nprobe = 3 · khoảng cách L2 · top-k = 5</small></div>
+      <div class="arr arr-blue"></div>
+
+      <!-- Voting -->
+      <div class="box blue-box">Weighted voting dự đoán nhãn<br><small style="font-weight:400">weight = 1 / (d + ε) · chọn nhãn có tổng weight cao nhất</small></div>
+      <div class="arr arr-blue"></div>
+
+      <!-- Output -->
+      <div class="para blue-box" style="width:100%">Trả về top-5 ảnh tương tự + nhãn dự đoán</div>
+    </div><!-- /col-query -->
+
+  </div><!-- /columns -->
+
+  <div class="merge-note">
+    <strong>Ghi chú:</strong>
+    <ul style="padding-left:20px;margin-top:6px">
+      <li>Vector đặc trưng <strong>349 chiều</strong>: HOG chiếm 324/349 (≈ 93 %), là đặc trưng chủ đạo.</li>
+      <li>Cả hai pipeline dùng cùng hàm trích xuất và cùng bộ tham số (config.py).</li>
+      <li>FAISS IVF chia không gian thành <strong>4 cụm (nlist = 4)</strong>, tìm kiếm trong <strong>3 cụm (nprobe = 3)</strong> mỗi truy vấn.</li>
+      <li>Bước chuẩn hóa z-score ở pipeline query dùng thống kê được lưu từ tập train — không tính lại.</li>
+    </ul>
+  </div>
+</body>
+</html>
