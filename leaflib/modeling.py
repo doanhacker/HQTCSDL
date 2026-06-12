@@ -135,12 +135,18 @@ def dump_outputs(
 
 
 def summarize_dataset(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFrame, output_dir: Path) -> None:
+    class_counts = (
+        train_df["label"]
+        .value_counts()
+        .sort_index()
+        .rename_axis("label")
+        .reset_index(name="image_count")
+        .to_dict("records")
+    )
     summary = {
-        "train_images": int(len(train_df)),
-        "valid_images": int(len(valid_df)),
-        "test_images": int(len(test_df)),
+        "tap_anh": int(len(train_df)),
         "num_classes": int(train_df["label"].nunique()),
         "feature_dimension": int(len(feature_columns(train_df))),
-        "classes": sorted(train_df["label"].unique().tolist()),
+        "classes": class_counts,
     }
     (output_dir / "dataset_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

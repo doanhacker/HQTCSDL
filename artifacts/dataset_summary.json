@@ -1,21 +1,55 @@
 {
-  "train_images": 4274,
-  "valid_images": 110,
-  "test_images": 110,
+  "tap_anh": 4274,
   "num_classes": 12,
   "feature_dimension": 349,
   "classes": [
-    "Alstonia Scholaris",
-    "Arjun",
-    "Bael",
-    "Basil",
-    "Chinar",
-    "Gauva",
-    "Jamun",
-    "Jatropha",
-    "Lemon",
-    "Mango",
-    "Pomegranate",
-    "Pongamia Pinnata"
+    {
+      "label": "Alstonia Scholaris",
+      "image_count": 412
+    },
+    {
+      "label": "Arjun",
+      "image_count": 432
+    },
+    {
+      "label": "Bael",
+      "image_count": 107
+    },
+    {
+      "label": "Basil",
+      "image_count": 137
+    },
+    {
+      "label": "Chinar",
+      "image_count": 203
+    },
+    {
+      "label": "Gauva",
+      "image_count": 398
+    },
+    {
+      "label": "Jamun",
+      "image_count": 603
+    },
+    {
+      "label": "Jatropha",
+      "image_count": 237
+    },
+    {
+      "label": "Lemon",
+      "image_count": 216
+    },
+    {
+      "label": "Mango",
+      "image_count": 414
+    },
+    {
+      "label": "Pomegranate",
+      "image_count": 538
+    },
+    {
+      "label": "Pongamia Pinnata",
+      "image_count": 577
+    }
   ]
 }

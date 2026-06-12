@@ -208,8 +208,6 @@ def render_search_results(
         st.warning("Không tìm thấy kết quả nào.")
         return
 
-    render_prediction_summary(results)
-
     metadata_df = pd.DataFrame()
     try:
         metadata_df = fetch_mysql_metadata(results["faiss_id"].tolist())
@@ -227,7 +225,6 @@ def render_search_results(
                 st.warning(f"Không mở được ảnh: {row['relative_path']}")
             st.write(f"`{row['image_name']}`")
             st.write(f"L2 distance: `{row['distance_l2']:.4f}`")
-            st.write(f"Confidence: `{row['confidence_pct']:.2f}%`")
             st.write(f"Path: `{row['relative_path']}`")
 
             if not metadata_df.empty:
@@ -253,7 +250,7 @@ def main() -> None:
         st.warning("Artifacts hien tai chua co HOG. Hay chay lai leaf_feature_pipeline.py de HOG tham gia truy van Faiss.")
 
     info_col1, info_col2, info_col3 = st.columns(3)
-    info_col1.metric("Số ảnh train", summary["train_images"])
+    info_col1.metric("Tập ảnh", summary["tap_anh"])
     info_col2.metric("Số lớp", summary["num_classes"])
     info_col3.metric("K được chọn", chosen_k["chosen_k"])
 
